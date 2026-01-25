@@ -1,0 +1,25 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+pub struct Rpcrequest<T> {
+    pub jsonrpc: &'static str,
+    pub id: u64,
+    pub method: &'static str,
+    pub params: T
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct Rpcresponse<T> {
+    pub jsonrpc: String,
+    pub result: T,
+    pub id: u64
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct RpcError{
+    pub code: u64,
+    pub message: String
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct Slotresponse(pub u64);
