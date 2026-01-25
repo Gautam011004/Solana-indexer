@@ -23,3 +23,26 @@ pub struct RpcError{
 
 #[derive(Serialize,Deserialize)]
 pub struct Slotresponse(pub u64);
+
+#[derive(Serialize,Deserialize)]
+pub struct Rpcblock{
+    pub blockheight: Option<u64>,
+    pub parent: u64,
+    pub transactions: Option<Vec<RpcTransaction>>
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct RpcTransaction{
+    pub meta: Option<RpcTransactionmeta>,
+    pub transaction: RpcTransactionData
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct RpcTransactionmeta{
+    pub err: Option<serde_json::Value>,
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct RpcTransactionData{
+    pub signatures: Vec<String>
+}

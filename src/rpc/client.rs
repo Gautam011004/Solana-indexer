@@ -5,7 +5,7 @@ use reqwest::{Client};
 use serde::de::DeserializeOwned;
 use serde_json::json;
 
-use crate::rpc::types::{Rpcrequest, Rpcresponse};
+use crate::rpc::types::{Rpcblock, Rpcrequest, Rpcresponse};
 
 pub struct SolanaRpc {
     client: Client,
@@ -54,5 +54,15 @@ impl SolanaRpc{
 
             let slot = self.send("getslot", params).await?;
             Ok(slot)
+        }
+        async fn get_finalized_block(&self, slot: u64) -> Result<Rpcblock, Error> {
+            let params = json!([
+                    slot, {
+                    "commitment" : "finalized",
+                    "transactionDetails": "full",
+                    "rewards": false
+            }]);
+            let block = self.send("getBlock", params).await?;
+            Ok(block)
         }
 }
