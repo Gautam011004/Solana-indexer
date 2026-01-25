@@ -52,10 +52,10 @@ impl SolanaRpc{
         async fn get_finalized_slot(&self) -> Result<u64, Error> {
             let params = json!([{"commitment": "finalized"}]);
 
-            let slot = self.send("getslot", params).await?;
+            let slot = self.send("getSlot", params).await?;
             Ok(slot)
         }
-        async fn get_finalized_block(&self, slot: u64) -> Result<Rpcblock, Error> {
+        pub async fn get_finalized_block(&self, slot: u64) -> Result<Rpcblock, Error> {
             let params = json!([
                     slot, {
                     "commitment" : "finalized",

@@ -27,7 +27,7 @@ pub struct Slotresponse(pub u64);
 #[derive(Serialize,Deserialize)]
 pub struct Rpcblock{
     pub blockheight: Option<u64>,
-    pub parent: u64,
+    pub parentSlot: u64,
     pub transactions: Option<Vec<RpcTransaction>>
 }
 
