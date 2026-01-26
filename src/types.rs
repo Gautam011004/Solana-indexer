@@ -5,7 +5,7 @@ pub struct SlotMeta {
     pub status: SlotStatus
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug,Clone,PartialEq)]
 pub enum SlotStatus{
     Processed,
     Confirmed,
