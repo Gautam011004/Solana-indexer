@@ -1,5 +1,7 @@
 
 
+use std::fmt::Debug;
+
 use anyhow::{Error, Ok};
 use reqwest::{Client};
 use serde::de::DeserializeOwned;
@@ -25,12 +27,12 @@ impl SolanaRpc{
         &self, method: &'static str, 
         params: Tparams) -> Result<Tresults, Error> 
         where 
-            Tparams: serde::Serialize,
-            Tresults: DeserializeOwned
+            Tparams: serde::Serialize  + Debug,
+            Tresults: DeserializeOwned + Debug
         {
             let id = self
-                                .requestid
-                                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                        .requestid
+                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             
             let request = Rpcrequest {
                                                 jsonrpc: "2.0",
@@ -38,30 +40,37 @@ impl SolanaRpc{
                                                 method,
                                                 params
                                             };
+            println!("{:?}", request);
             let response = self
-                                        .client
-                                        .post(&self.url)
-                                        .json(&request)
-                                        .send()
-                                        .await?
-                                        .error_for_status()?
-                                        .json::<Rpcresponse<Tresults>>()
-                                        .await?;
+                                                .client
+                                                .post(&self.url)
+                                                .json(&request)
+                                                .send()
+                                                .await?
+                                                .error_for_status()?
+                                                .json::<Rpcresponse<Tresults>>()
+                                                .await?;
+            println!("{:?}", response);
+
+
             Ok(response.result)
         }
-        async fn get_finalized_slot(&self) -> Result<u64, Error> {
+        pub async fn get_finalized_slot(&self) -> Result<u64, Error> {
             let params = json!([{"commitment": "finalized"}]);
 
             let slot = self.send("getSlot", params).await?;
             Ok(slot)
         }
         pub async fn get_finalized_block(&self, slot: u64) -> Result<Rpcblock, Error> {
+
             let params = json!([
                     slot, {
                     "commitment" : "finalized",
                     "transactionDetails": "full",
+                    "maxSupportedTransactionVersion": 0,
                     "rewards": false
             }]);
+
             let block = self.send("getBlock", params).await?;
             Ok(block)
         }

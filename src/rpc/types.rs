@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Rpcrequest<T> {
     pub jsonrpc: &'static str,
     pub id: u64,
@@ -8,7 +8,7 @@ pub struct Rpcrequest<T> {
     pub params: T
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Debug)]
 pub struct Rpcresponse<T> {
     pub jsonrpc: String,
     pub result: T,
@@ -24,25 +24,25 @@ pub struct RpcError{
 #[derive(Serialize,Deserialize)]
 pub struct Slotresponse(pub u64);
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize, Debug)]
 pub struct Rpcblock{
     pub blockheight: Option<u64>,
     pub parentSlot: u64,
     pub transactions: Option<Vec<RpcTransaction>>
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize, Debug)]
 pub struct RpcTransaction{
     pub meta: Option<RpcTransactionmeta>,
     pub transaction: RpcTransactionData
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Debug)]
 pub struct RpcTransactionmeta{
     pub err: Option<serde_json::Value>,
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize, Debug)]
 pub struct RpcTransactionData{
     pub signatures: Vec<String>
 }

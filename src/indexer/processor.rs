@@ -18,6 +18,7 @@ where P: SlotProcessor + Sync,{
         from_Slot: u64,
         to_Slot: u64
     ) -> Result<(), Error>{
+        println!("Control reached backfiller");
         for slot in (from_Slot + 1) ..= to_Slot {
             let block = self.rpc.get_finalized_block(slot).await?;
 
