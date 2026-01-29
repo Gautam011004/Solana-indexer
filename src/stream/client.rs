@@ -1,7 +1,6 @@
 use anyhow::{Error, Ok};
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
-use tonic::Request;
 use tonic::transport::Channel;
 
 use crate::geyser::SubscribeRequest;
@@ -19,15 +18,10 @@ impl GrpcClient {
 
     pub async fn subscribe(&mut self) -> Result<(), Error>{
         let (tx, rx) = mpsc::channel(1);
-
         tx.send(SubscribeRequest::default()).await?;
-
         let request_stream = ReceiverStream::new(rx);
-
         let mut stream = self.inner.subscribe(request_stream).await?.into_inner();
-
         println!("Connected to geyser client");
-
         while let Some(update) = stream.message().await? {
             println!("Update: {:?}", update);
         }
