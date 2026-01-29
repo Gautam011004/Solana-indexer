@@ -3,7 +3,7 @@ fn main() {
         .compile(
             &[
                 "proto/geyser.proto",
-                "proto/solana_storage.proto",
+                "proto/solana-storage.proto",
             ],
             &["proto"],
         )

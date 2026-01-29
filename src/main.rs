@@ -7,6 +7,16 @@ pub mod indexer;
 pub mod rpc;
 pub mod storage;
 
+pub mod geyser {
+    tonic::include_proto!("geyser");
+}
+pub mod solana {
+    pub mod storage{
+        pub mod confirmed_block {
+        tonic::include_proto!("solana.storage.confirmed_block");
+        }
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -16,10 +26,8 @@ async fn main() -> Result<(), Error> {
 
     let finalized_slot = rpc.get_finalized_slot().await?;
 
-    println!("RPC finalized slot {}", finalized_slot);
-
     let start = finalized_slot.saturating_sub(5);
-    println!("{}", start);
+
     backfiller.backfiller_range(start, finalized_slot).await?;
 
     Ok(())

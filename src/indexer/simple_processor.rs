@@ -18,7 +18,7 @@ impl Simpleprocessor {
 #[async_trait]
 impl SlotProcessor for Simpleprocessor{
     async fn process_slot(&self, slot: SlotMeta) -> Result<(), Error>{
-        println!("Control reaches here");
+
         if slot.status != SlotStatus::Finalized {
             return Err(anyhow!("Simple processor only processes finalized slots"));
         }

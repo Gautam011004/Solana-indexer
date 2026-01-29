@@ -1,12 +1,8 @@
-
-
 use std::fmt::Debug;
-
 use anyhow::{Error, Ok};
 use reqwest::{Client};
 use serde::de::DeserializeOwned;
 use serde_json::json;
-
 use crate::rpc::types::{Rpcblock, Rpcrequest, Rpcresponse};
 
 pub struct SolanaRpc {
@@ -27,7 +23,7 @@ impl SolanaRpc{
         &self, method: &'static str, 
         params: Tparams) -> Result<Tresults, Error> 
         where 
-            Tparams: serde::Serialize  + Debug,
+            Tparams:  serde::Serialize  + Debug,
             Tresults: DeserializeOwned + Debug
         {
             let id = self
@@ -40,7 +36,6 @@ impl SolanaRpc{
                                                 method,
                                                 params
                                             };
-            println!("{:?}", request);
             let response = self
                                                 .client
                                                 .post(&self.url)
@@ -50,8 +45,6 @@ impl SolanaRpc{
                                                 .error_for_status()?
                                                 .json::<Rpcresponse<Tresults>>()
                                                 .await?;
-            println!("{:?}", response);
-
 
             Ok(response.result)
         }
