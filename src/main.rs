@@ -6,6 +6,7 @@ pub mod types;
 pub mod indexer;
 pub mod rpc;
 pub mod storage;
+pub mod stream;
 
 pub mod geyser {
     tonic::include_proto!("geyser");
@@ -20,15 +21,9 @@ pub mod solana {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let rpc = SolanaRpc::new("https://solana-devnet.g.alchemy.com/v2/6EM78ky3wCNeN-LPwKPhaC_fuRz6v68N");
-    let processor = Simpleprocessor::new();
-    let backfiller = Backfiller::new(&rpc, &processor);
+    let mut client = stream::client::GrpcClient::connect("https://solana-rpc.parafi.tech:10443").await?;
 
-    let finalized_slot = rpc.get_finalized_slot().await?;
-
-    let start = finalized_slot.saturating_sub(5);
-
-    backfiller.backfiller_range(start, finalized_slot).await?;
+    client.subscribe().await?;
 
     Ok(())
 
