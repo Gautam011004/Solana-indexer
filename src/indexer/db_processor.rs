@@ -1,13 +1,13 @@
 use anyhow::{Error, Ok, anyhow};
 use tokio::sync::Mutex;
 use tonic::async_trait;
-use crate::{indexer::backfill::SlotProcessor, storage::postgres::PostgresStorage, types::{SlotMeta, SlotStatus}};
+use crate::{geyser::{SlotStatus, SubscribeUpdate, SubscribeUpdateSlot}, indexer::{processor_trait::SlotProcessor, backfiller_rpc::{self, Backfiller}}, rpc::client::SolanaRpc, solana::storage::confirmed_block::ConfirmedBlock, storage::postgres::PostgresStorage, types::SlotMeta};
 
 const FINALIZED_CHECKPOINT: &str = "last_finalized_slot";
 
 pub struct db_processor {
-    storage: PostgresStorage,
-    last_finalized: Mutex<Option<u64>>
+    pub storage: PostgresStorage,
+    pub last_finalized: Mutex<Option<u64>>
 }
 
 impl db_processor {
@@ -21,18 +21,18 @@ impl db_processor {
 
 #[async_trait]
 impl SlotProcessor for db_processor {
-    async fn process_slot(&self, slot: SlotMeta) -> Result<(), Error>{
+    async fn process_slot(&self, slot: SubscribeUpdateSlot, rpc: &SolanaRpc, processor: &db_processor) -> Result<(), Error>{
         self.storage.insert_slot(&slot).await?;
 
-        if slot.status == SlotStatus::Finalized {
+        if SlotStatus::from_i32(slot.status).unwrap() == SlotStatus::SlotFinalized {
             let mut last = self.last_finalized.lock().await;
 
             if let Some(prev) = *last {
                 if prev + 1 != slot.slot {
-                    return Err(anyhow!("Error gap detected, expected slot {} got slot {}", prev + 1, slot.slot));
+                    let backfiller = Backfiller::new(&rpc, processor);
+                    backfiller.backfiller_range(prev, slot.slot, processor).await?;
                 }
             }
-
             self.storage.set_checkpoint(FINALIZED_CHECKPOINT, slot.slot).await?;
 
             *last = Some(slot.slot);

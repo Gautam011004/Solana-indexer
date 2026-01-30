@@ -1,8 +1,9 @@
 use anyhow::{Error, Ok};
 use sqlx::{PgPool, Row};
 
-use crate::types::{SlotMeta, SlotStatus};
+use crate::{geyser::{SlotStatus, SubscribeUpdateSlot}, solana::storage::confirmed_block::ConfirmedBlock, types::{SlotMeta}};
 
+#[derive(Clone)]
 pub struct PostgresStorage {
     pool: PgPool
 }
@@ -40,7 +41,7 @@ impl PostgresStorage {
         Ok(())
     }
 
-    pub async fn insert_slot(&self, slot: &SlotMeta) -> Result<(),Error>{
+    pub async fn insert_slot(&self, slot: &SubscribeUpdateSlot) -> Result<(),Error>{
         sqlx::query(
             r#"Insert into slots (slot, parent, status)
                     Values ($1, $2, $3) 
@@ -52,18 +53,21 @@ impl PostgresStorage {
         )
         .bind(slot.slot as i64)
         .bind(slot.parent.map(|p| p as i64))
-        .bind(slot_status_str(&slot.status))
+        .bind(slot_status_str(&SlotStatus::from_i32(slot.status).unwrap()))
         .execute(&self.pool)
         .await?;
-        
         Ok(())
     }
 }
 
 fn slot_status_str(status: &SlotStatus) -> &'static str{
     match status {
-        SlotStatus::Confirmed => "Confirmed",
-        SlotStatus::Finalized => "Finalized",
-        SlotStatus::Processed => "Processed"
+        SlotStatus::SlotConfirmed => "Confirmed",
+        SlotStatus::SlotFinalized => "Finalized",
+        SlotStatus::SlotProcessed => "Processed",
+        SlotStatus::SlotCompleted => "Completed",
+        SlotStatus::SlotDead => "Dead",
+        SlotStatus::SlotCreatedBank => "Created Bank",
+        SlotStatus::SlotFirstShredReceived => "First shred recieved"
     }
 }

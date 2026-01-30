@@ -6,6 +6,9 @@ use tonic::transport::{Channel, ClientTlsConfig};
 use crate::geyser::SubscribeRequest;
 use crate::geyser::geyser_client::GeyserClient;
 use crate::geyser::subscribe_update::UpdateOneof;
+use crate::indexer::processor_trait::SlotProcessor;
+use crate::indexer::db_processor::db_processor;
+use crate::rpc::client::SolanaRpc;
 
 pub struct GrpcClient {
     inner : GeyserClient<Channel>
@@ -22,7 +25,7 @@ impl GrpcClient {
         Ok(Self { inner })
     }
 
-    pub async fn subscribe(&mut self) -> Result<(), Error>{
+    pub async fn subscribe(&mut self, db_processor: &db_processor, rpc: &SolanaRpc) -> Result<(), Error>{
         let (tx, rx) = mpsc::channel(1);
         tx.send(SubscribeRequest::default()).await?;
         let request_stream = ReceiverStream::new(rx);
@@ -40,6 +43,7 @@ impl GrpcClient {
         
                 Some(UpdateOneof::Slot(slot)) => {
                     println!("slot {}", slot.slot);
+                    db_processor.process_slot(slot, rpc, db_processor);
                 }
         
                 Some(UpdateOneof::Block(block)) => {
