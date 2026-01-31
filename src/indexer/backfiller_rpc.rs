@@ -1,8 +1,5 @@
-use std::ptr::null;
-
 use anyhow::Error;
-
-use crate::{geyser::{SlotStatus, SubscribeUpdateSlot}, indexer::{db_processor::db_processor, processor_trait::SlotProcessor}, rpc::client::SolanaRpc, types::SlotMeta};
+use crate::{geyser::{SlotStatus, SubscribeUpdateSlot}, indexer::{db_processor::db_processor, processor_trait::SlotProcessor}, rpc::client::SolanaRpc};
 
 pub struct Backfiller<'a, P>{
     rpc: &'a SolanaRpc,

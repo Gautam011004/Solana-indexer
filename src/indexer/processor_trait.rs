@@ -1,7 +1,7 @@
 use anyhow::Result;
 use tonic::async_trait;
 
-use crate::{geyser::{SubscribeUpdateBlock, SubscribeUpdateSlot}, indexer::db_processor::db_processor, rpc::client::SolanaRpc, solana::storage::confirmed_block::{ConfirmedBlock, ConfirmedTransaction}, types::SlotMeta};
+use crate::{geyser::{SubscribeUpdateBlock, SubscribeUpdateSlot}, indexer::db_processor::db_processor, rpc::client::SolanaRpc};
 
 #[async_trait]
 pub trait SlotProcessor{

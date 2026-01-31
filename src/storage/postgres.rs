@@ -1,7 +1,7 @@
 use anyhow::{Error, Ok};
 use sqlx::{PgPool, Row};
 
-use crate::{geyser::{SlotStatus, SubscribeUpdateBlock, SubscribeUpdateSlot}, solana::storage::confirmed_block::ConfirmedBlock, types::SlotMeta};
+use crate::{geyser::{SlotStatus, SubscribeUpdateBlock, SubscribeUpdateSlot}};
 
 #[derive(Clone)]
 pub struct PostgresStorage {

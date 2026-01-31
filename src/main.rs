@@ -18,7 +18,5 @@ pub mod solana {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let mut client = stream::client::GrpcClient::connect("https://solana-rpc.parafi.tech:10443").await?;
     Ok(())
-
 }
