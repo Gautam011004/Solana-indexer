@@ -1,7 +1,7 @@
-use anyhow::{Error, Ok, anyhow};
+use anyhow::{Error, Ok};
 use tokio::sync::Mutex;
 use tonic::async_trait;
-use crate::{geyser::{SlotStatus, SubscribeUpdate, SubscribeUpdateSlot}, indexer::{processor_trait::SlotProcessor, backfiller_rpc::{self, Backfiller}}, rpc::client::SolanaRpc, solana::storage::confirmed_block::ConfirmedBlock, storage::postgres::PostgresStorage, types::SlotMeta};
+use crate::{geyser::{SlotStatus, SubscribeUpdateBlock, SubscribeUpdateSlot}, indexer::{backfiller_rpc::Backfiller, processor_trait::SlotProcessor}, rpc::client::SolanaRpc, storage::postgres::PostgresStorage};
 
 const FINALIZED_CHECKPOINT: &str = "last_finalized_slot";
 
@@ -18,13 +18,12 @@ impl db_processor {
     }
 }
 
-
 #[async_trait]
 impl SlotProcessor for db_processor {
     async fn process_slot(&self, slot: SubscribeUpdateSlot, rpc: &SolanaRpc, processor: &db_processor) -> Result<(), Error>{
         self.storage.insert_slot(&slot).await?;
 
-        if SlotStatus::from_i32(slot.status).unwrap() == SlotStatus::SlotFinalized {
+        if SlotStatus::from_i32(slot.status).unwrap() == SlotStatus::SlotFinalized  {
             let mut last = self.last_finalized.lock().await;
 
             if let Some(prev) = *last {
@@ -39,6 +38,10 @@ impl SlotProcessor for db_processor {
             
             println!("Processed slot {}", slot.slot);
         }
+        Ok(())
+    }
+    async fn process_block(&self, block: &SubscribeUpdateBlock) -> Result<(), Error> {
+        self.storage.insert_block(block).await?;
         Ok(())
     }
 }

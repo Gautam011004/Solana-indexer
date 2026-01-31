@@ -1,7 +1,7 @@
 use anyhow::{Error, Ok};
 use sqlx::{PgPool, Row};
 
-use crate::{geyser::{SlotStatus, SubscribeUpdateSlot}, solana::storage::confirmed_block::ConfirmedBlock, types::{SlotMeta}};
+use crate::{geyser::{SlotStatus, SubscribeUpdateBlock, SubscribeUpdateSlot}, solana::storage::confirmed_block::ConfirmedBlock, types::SlotMeta};
 
 #[derive(Clone)]
 pub struct PostgresStorage {
@@ -54,6 +54,25 @@ impl PostgresStorage {
         .bind(slot.slot as i64)
         .bind(slot.parent.map(|p| p as i64))
         .bind(slot_status_str(&SlotStatus::from_i32(slot.status).unwrap()))
+        .execute(&self.pool)
+        .await?;
+        Ok(())
+    }
+    pub async fn insert_block(&self, block: &SubscribeUpdateBlock) -> Result<(), Error>{
+        sqlx::query(
+            r#"Insert into blocks (slot, blockhash, update_account_count, entries_count)
+                    Values ($1, $2, $3, $4) on conflict (slot) 
+                    do update set 
+                        blockhash = Excluded.blockhash
+                        update_account_count = Excluded.update_account_count
+                        entries_count = Excluded.entries_count
+                        status = Excluded.status
+                    "#
+        )
+        .bind(block.slot as i64)
+        .bind(&block.blockhash)
+        .bind(block.updated_account_count as i64)
+        .bind(block.entries_count as i64)
         .execute(&self.pool)
         .await?;
         Ok(())

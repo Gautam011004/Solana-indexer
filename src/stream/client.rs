@@ -43,11 +43,12 @@ impl GrpcClient {
         
                 Some(UpdateOneof::Slot(slot)) => {
                     println!("slot {}", slot.slot);
-                    db_processor.process_slot(slot, rpc, db_processor);
+                    db_processor.process_slot(slot, rpc, db_processor).await?;
                 }
         
                 Some(UpdateOneof::Block(block)) => {
                     println!("block at slot {}", block.slot);
+                    db_processor.process_block(&block).await?;
                 }
         
                 Some(UpdateOneof::Transaction(tx)) => {
