@@ -28,11 +28,12 @@ impl PostgresStorage {
 
     pub async fn set_checkpoint(&self, key: &str, value: u64) -> Result<(), Error>{
         sqlx::query(
-            r#"Insert into checkpoints where (key, value)
-                    values ($1, $2)
-                    on conflict (key)
-                    do Update set value = Excluded.value
-                    "#,
+            r#"
+            INSERT INTO checkpoints (key, value)
+            VALUES ($1, $2)
+            ON CONFLICT (key)
+            DO UPDATE SET value = EXCLUDED.value
+            "#,
         )
         .bind(key)
         .bind(value as i64)
@@ -42,18 +43,19 @@ impl PostgresStorage {
     }
 
     pub async fn insert_slot(&self, slot: &SubscribeUpdateSlot) -> Result<(),Error>{
+        let status = SlotStatus::try_from(slot.status).unwrap_or(SlotStatus::SlotProcessed);
         sqlx::query(
             r#"Insert into slots (slot, parent, status)
                     Values ($1, $2, $3) 
                     on conflict (slot) 
                     do update set 
-                        parent = Excluded.parent
+                        parent = Excluded.parent,
                         status = Excluded.status
                     "#
         )
         .bind(slot.slot as i64)
         .bind(slot.parent.map(|p| p as i64))
-        .bind(slot_status_str(&SlotStatus::from_i32(slot.status).unwrap()))
+        .bind(slot_status_str(&status))
         .execute(&self.pool)
         .await?;
         Ok(())
@@ -63,10 +65,9 @@ impl PostgresStorage {
             r#"Insert into blocks (slot, blockhash, update_account_count, entries_count)
                     Values ($1, $2, $3, $4) on conflict (slot) 
                     do update set 
-                        blockhash = Excluded.blockhash
-                        update_account_count = Excluded.update_account_count
+                        blockhash = Excluded.blockhash,
+                        update_account_count = Excluded.update_account_count,
                         entries_count = Excluded.entries_count
-                        status = Excluded.status
                     "#
         )
         .bind(block.slot as i64)

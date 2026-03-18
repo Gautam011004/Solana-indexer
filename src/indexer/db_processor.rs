@@ -23,7 +23,7 @@ impl SlotProcessor for db_processor {
     async fn process_slot(&self, slot: SubscribeUpdateSlot, rpc: &SolanaRpc, processor: &db_processor) -> Result<(), Error>{
         self.storage.insert_slot(&slot).await?;
 
-        if SlotStatus::from_i32(slot.status).unwrap() == SlotStatus::SlotFinalized  {
+        if SlotStatus::try_from(slot.status).unwrap_or(SlotStatus::SlotProcessed) == SlotStatus::SlotFinalized  {
             let mut last = self.last_finalized.lock().await;
 
             if let Some(prev) = *last {
